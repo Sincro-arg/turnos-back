@@ -188,4 +188,81 @@ public class TurnosControllerTests
         var error = notFound.Value!.GetType().GetProperty("error")!.GetValue(notFound.Value) as string;
         Assert.Equal("Turno no encontrado", error);
     }
+    [Fact]
+    public async Task UpdateTurno_ConCampoObligatorioFaltante_DevuelveBadRequest()
+    {
+        var ctrl = BuildController(out var db);
+        var turno = new Turno { Id = Guid.NewGuid(), Cliente = "Original", Telefono = "1", Servicio = "Corte", Fecha = "2026-09-20", Hora = "09:00" };
+        db.Turnos.Add(turno);
+        await db.SaveChangesAsync();
+
+        var result = await ctrl.UpdateTurno(turno.Id, NuevoInput("10:00") with { Cliente = null });
+
+        var bad = Assert.IsType<BadRequestObjectResult>(result.Result);
+        var error = bad.Value!.GetType().GetProperty("error")!.GetValue(bad.Value) as string;
+        Assert.False(string.IsNullOrWhiteSpace(error));
+    }
+
+    [Fact]
+    public async Task UpdateTurno_ConServicioInvalido_DevuelveBadRequest()
+    {
+        var ctrl = BuildController(out var db);
+        var turno = new Turno { Id = Guid.NewGuid(), Cliente = "Original", Telefono = "1", Servicio = "Corte", Fecha = "2026-09-20", Hora = "09:00" };
+        db.Turnos.Add(turno);
+        await db.SaveChangesAsync();
+
+        var result = await ctrl.UpdateTurno(turno.Id, NuevoInput("10:00", servicio: "Manicura"));
+
+        var bad = Assert.IsType<BadRequestObjectResult>(result.Result);
+        var error = bad.Value!.GetType().GetProperty("error")!.GetValue(bad.Value) as string;
+        Assert.False(string.IsNullOrWhiteSpace(error));
+    }
+
+    [Fact]
+    public async Task CreateTurno_SinCliente_DevuelveBadRequest()
+    {
+        var ctrl = BuildController(out _);
+
+        var result = await ctrl.CreateTurno(NuevoInput("11:00") with { Cliente = null });
+
+        var bad = Assert.IsType<BadRequestObjectResult>(result.Result);
+        var error = bad.Value!.GetType().GetProperty("error")!.GetValue(bad.Value) as string;
+        Assert.False(string.IsNullOrWhiteSpace(error));
+    }
+
+    [Fact]
+    public async Task CreateTurno_SinTelefono_DevuelveBadRequest()
+    {
+        var ctrl = BuildController(out _);
+
+        var result = await ctrl.CreateTurno(NuevoInput("11:00") with { Telefono = null });
+
+        var bad = Assert.IsType<BadRequestObjectResult>(result.Result);
+        var error = bad.Value!.GetType().GetProperty("error")!.GetValue(bad.Value) as string;
+        Assert.False(string.IsNullOrWhiteSpace(error));
+    }
+
+    [Fact]
+    public async Task CreateTurno_SinFecha_DevuelveBadRequest()
+    {
+        var ctrl = BuildController(out _);
+
+        var result = await ctrl.CreateTurno(NuevoInput("11:00") with { Fecha = null });
+
+        var bad = Assert.IsType<BadRequestObjectResult>(result.Result);
+        var error = bad.Value!.GetType().GetProperty("error")!.GetValue(bad.Value) as string;
+        Assert.False(string.IsNullOrWhiteSpace(error));
+    }
+
+    [Fact]
+    public async Task CreateTurno_SinHora_DevuelveBadRequest()
+    {
+        var ctrl = BuildController(out _);
+
+        var result = await ctrl.CreateTurno(NuevoInput("11:00") with { Hora = null });
+
+        var bad = Assert.IsType<BadRequestObjectResult>(result.Result);
+        var error = bad.Value!.GetType().GetProperty("error")!.GetValue(bad.Value) as string;
+        Assert.False(string.IsNullOrWhiteSpace(error));
+    }
 }

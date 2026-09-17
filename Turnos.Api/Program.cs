@@ -25,11 +25,18 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Turnos API", Version = "v1" });
 });
 
+// Los origenes permitidos salen de CORS_ORIGINS (separados por coma). Sin esa
+// variable queda solo el Angular local: el front desplegado vive en otro dominio
+// y sin esto el navegador le corta cada llamada, con el front mostrando
+// "No se pudo conectar con el servidor" y el back sin registrar ningun error.
+var origenes = (Environment.GetEnvironmentVariable("CORS_ORIGINS") ?? "http://localhost:4200")
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins(origenes)
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
