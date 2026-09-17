@@ -132,6 +132,38 @@ public class TurnosControllerTests
     }
 
     [Fact]
+    public async Task UpdateTurno_AHorarioOcupadoPorOtroTurno_DevuelveConflict()
+    {
+        var ctrl = BuildController(out var db);
+        var turnoAEditar = new Turno { Id = Guid.NewGuid(), Cliente = "Original", Telefono = "1", Servicio = "Corte", Fecha = "2026-09-20", Hora = "09:00" };
+        var otroTurno = new Turno { Id = Guid.NewGuid(), Cliente = "Otro", Telefono = "2", Servicio = "Color", Fecha = "2026-09-20", Hora = "11:00" };
+        db.Turnos.AddRange(turnoAEditar, otroTurno);
+        await db.SaveChangesAsync();
+
+        var result = await ctrl.UpdateTurno(turnoAEditar.Id, NuevoInput("11:00"));
+
+        var conflict = Assert.IsType<ConflictObjectResult>(result.Result);
+        var error = conflict.Value!.GetType().GetProperty("error")!.GetValue(conflict.Value) as string;
+        Assert.Equal("Ya hay un turno a las 11:00", error);
+    }
+
+    [Fact]
+    public async Task UpdateTurno_DejandoloEnSuMismoHorario_NoDevuelveConflict()
+    {
+        var ctrl = BuildController(out var db);
+        var turno = new Turno { Id = Guid.NewGuid(), Cliente = "Original", Telefono = "1", Servicio = "Corte", Fecha = "2026-09-20", Hora = "09:00" };
+        db.Turnos.Add(turno);
+        await db.SaveChangesAsync();
+
+        var result = await ctrl.UpdateTurno(turno.Id, NuevoInput("09:00", servicio: "Color"));
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var dto = Assert.IsType<TurnoDto>(ok.Value);
+        Assert.Equal("09:00", dto.Hora);
+        Assert.Equal("Color", dto.Servicio);
+    }
+
+    [Fact]
     public async Task DeleteTurno_ConIdExistente_LoBorraYDevuelveNoContent()
     {
         var ctrl = BuildController(out var db);
