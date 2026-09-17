@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Turnos.Api.csproj" />
+    <ProjectReference Include="..\Turnos.Api\Turnos.Api.csproj" />
   </ItemGroup>
 
 </Project>
