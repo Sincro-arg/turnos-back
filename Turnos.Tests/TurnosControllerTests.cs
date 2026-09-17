@@ -42,6 +42,27 @@ public class TurnosControllerTests
     }
 
     [Fact]
+    public async Task GetTurnos_SinFecha_DevuelveLosDeHoy()
+    {
+        var ctrl = BuildController(out var db);
+        var hoy = DateTime.Now.ToString("yyyy-MM-dd");
+        var otroDia = DateTime.Now.AddDays(1).ToString("yyyy-MM-dd");
+        db.Turnos.AddRange(
+            new Turno { Id = Guid.NewGuid(), Cliente = "Hoy", Telefono = "1", Servicio = "Corte", Fecha = hoy, Hora = "10:00" },
+            new Turno { Id = Guid.NewGuid(), Cliente = "Otro dia", Telefono = "2", Servicio = "Color", Fecha = otroDia, Hora = "10:00" }
+        );
+        await db.SaveChangesAsync();
+
+        var result = await ctrl.GetTurnos(null);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var turnos = Assert.IsAssignableFrom<IEnumerable<TurnoDto>>(ok.Value).ToList();
+        Assert.Single(turnos);
+        Assert.Equal("Hoy", turnos[0].Cliente);
+        Assert.Equal(hoy, turnos[0].Fecha);
+    }
+
+    [Fact]
     public async Task CreateTurno_ConDatosValidos_DevuelveCreatedConElDto()
     {
         var ctrl = BuildController(out var db);
