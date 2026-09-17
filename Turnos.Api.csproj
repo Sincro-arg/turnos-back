@@ -16,4 +16,10 @@
     <PackageReference Include="Microsoft.OpenApi" Version="1.6.14" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="Turnos.Tests/**" />
+    <Content Remove="Turnos.Tests/**" />
+    <None Remove="Turnos.Tests/**" />
+  </ItemGroup>
+
 </Project>
