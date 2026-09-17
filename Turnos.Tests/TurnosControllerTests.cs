@@ -99,6 +99,36 @@ public class TurnosControllerTests
     }
 
     [Fact]
+    public async Task UpdateTurno_ConCampoObligatorioFaltante_DevuelveBadRequest()
+    {
+        var ctrl = BuildController(out var db);
+        var turno = new Turno { Id = Guid.NewGuid(), Cliente = "Original", Telefono = "1", Servicio = "Corte", Fecha = "2026-09-20", Hora = "09:00" };
+        db.Turnos.Add(turno);
+        await db.SaveChangesAsync();
+
+        var result = await ctrl.UpdateTurno(turno.Id, NuevoInput("10:00") with { Cliente = null });
+
+        var bad = Assert.IsType<BadRequestObjectResult>(result.Result);
+        var error = bad.Value!.GetType().GetProperty("error")!.GetValue(bad.Value) as string;
+        Assert.False(string.IsNullOrWhiteSpace(error));
+    }
+
+    [Fact]
+    public async Task UpdateTurno_ConServicioInvalido_DevuelveBadRequest()
+    {
+        var ctrl = BuildController(out var db);
+        var turno = new Turno { Id = Guid.NewGuid(), Cliente = "Original", Telefono = "1", Servicio = "Corte", Fecha = "2026-09-20", Hora = "09:00" };
+        db.Turnos.Add(turno);
+        await db.SaveChangesAsync();
+
+        var result = await ctrl.UpdateTurno(turno.Id, NuevoInput("10:00", servicio: "Manicura"));
+
+        var bad = Assert.IsType<BadRequestObjectResult>(result.Result);
+        var error = bad.Value!.GetType().GetProperty("error")!.GetValue(bad.Value) as string;
+        Assert.False(string.IsNullOrWhiteSpace(error));
+    }
+
+    [Fact]
     public async Task UpdateTurno_ConIdInexistente_DevuelveNotFound()
     {
         var ctrl = BuildController(out _);

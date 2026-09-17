@@ -20,6 +20,9 @@
     <Compile Remove="Turnos.Tests/**" />
     <Content Remove="Turnos.Tests/**" />
     <None Remove="Turnos.Tests/**" />
+    <Compile Remove="Turnos.Api/**" />
+    <Content Remove="Turnos.Api/**" />
+    <None Remove="Turnos.Api/**" />
   </ItemGroup>
 
 </Project>
